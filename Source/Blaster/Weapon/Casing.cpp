@@ -30,7 +30,7 @@ void ACasing::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitive
 	if (ShellSound) {
 		UGameplayStatics::PlaySoundAtLocation(this, ShellSound, GetActorLocation());
 	}
-	SetLifeSpan(2);
+	SetLifeSpan(1);
 }
 
 

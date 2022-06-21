@@ -2,8 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "CombatComponent.generated.h"
+#include"Blaster/HUD/BlasterHUD.h"
 
+#include "CombatComponent.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BLASTER_API UCombatComponent : public UActorComponent
@@ -31,16 +32,25 @@ protected:
 
 	void FireButtonPressed(bool bPressed);
 
+	void Fire();
+
 	UFUNCTION(Server, Reliable)
 	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
 
-	void TranceUnderCrosshairs(FHitResult& TraceHitResult);
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
+	void SetHUDCrosshairs(float DeltaTime);
 
 private:
+	UPROPERTY()
 	class ABlasterCharacter* Character;
+	UPROPERTY()
+	class ABlasterPlayerController* Controller;
+	UPROPERTY()
+	class ABlasterHUD* HUD;
 		
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
@@ -55,6 +65,45 @@ private:
 	float AimWalkSpeed;
 
 	bool bFireButtonPressed;
+
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
+	float CrosshairAimFactor;
+	float CrosshairShootingFactor;
+
+	FVector HitTarget;
+	FHUDPackage HUDPackage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float CrosshairShootingFactorValue;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float CrosshairAimFactorSpread;
+	float CrosshairBaseSpread;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float CrosshairShootingInterpSpeed;
+
+
+	float DefaultFOV;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomedFOV = 30.f;
+	
+	float CurrentFOV = 30.f;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomInterpSpeed = 20.f;
+
+	void InterpFOV(float DeltaTime);
+
+	// automatic fire
+
+	FTimerHandle FireTimer;
+
+	bool bCanFire = true;
+	void StartFireTimer();
+	void FireTimerFinished();
 
 public:	
 
