@@ -28,4 +28,9 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* DeathCount;
 	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* WeaponAmmoCount;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* CarriedAmmoCount;
 };
