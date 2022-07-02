@@ -14,6 +14,8 @@
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Engine/Engine.h"
+
 
 void ABlasterPlayerController::BeginPlay()
 {
@@ -29,6 +31,7 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	SetHUDTime();
+	SetHUDBountyPlayer();
 	PollInit();
 	CheckTimeSync(DeltaTime);
 }
@@ -38,6 +41,8 @@ void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABlasterPlayerController, MatchState);
+	DOREPLIFETIME(ABlasterPlayerController, CurrentBountyPlayerState); 
+	DOREPLIFETIME(ABlasterPlayerController, bBountyChanged);
 }
 
 void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
@@ -128,13 +133,7 @@ void ABlasterPlayerController::PollInit()
 				SetHUDDefeats(HUDDefeats);
 			}
 		}
-	}
-	else {
-		BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
-		if (BlasterGameMode && BlasterGameMode->bUpdatedTopScore) {
-			SetHUDBounty();
-		}
-	}
+	}	
 }
 
 
@@ -208,31 +207,45 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 
 void ABlasterPlayerController::SetHUDBounty()
 {
-	UE_LOG(LogTemp, Warning, TEXT("SetHUDBounty Called")); // log
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlay &&
 		BlasterHUD->CharacterOverlay->TopPlayerName;
-	if (bHUDValid)
-	{
-		ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
 
-		UE_LOG(LogTemp, Warning, TEXT("SetHUDBounty Called HUD")); // log
-		if (BlasterGameState) {
-			ABlasterPlayerState* BountyPlayerState = BlasterGameState->TopScoringPlayer;
-
-			UE_LOG(LogTemp, Warning, TEXT("SetHUDBounty Called GameState")); // log
-			if (BountyPlayerState) {
-				UE_LOG(LogTemp, Warning, TEXT("SetHUDBounty Called PlayerState")); // log
-				FString BountyPlayerName = BountyPlayerState->GetPlayerName();
-				BlasterHUD->CharacterOverlay->TopPlayerName->SetText(FText::FromString(BountyPlayerName));
-			}
+	if (bHUDValid) {
+		if (CurrentBountyPlayerState) {
+			FString BountyPlayerName = CurrentBountyPlayerState->GetPlayerName();
+			BlasterHUD->CharacterOverlay->TopPlayerName->SetText(FText::FromString(BountyPlayerName));
 		}
 	}
+}
 
-	BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
-	if (BlasterGameMode && BlasterGameMode->bUpdatedTopScore) {
-		BlasterGameMode->bUpdatedTopScore = false;
+
+void ABlasterPlayerController::SetHUDBountyPlayer()
+{
+	BlasterGameState = BlasterGameState == nullptr ? Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this)) : BlasterGameState;
+	if (HasAuthority() && BlasterGameState && BlasterGameState->bBountyUpdated) {
+		ABlasterPlayerState* BountyPlayerState = BlasterGameState->TopScoringPlayer;
+
+		if (BountyPlayerState != nullptr && BountyPlayerState != CurrentBountyPlayerState) {
+			bBountyChanged = true;
+			CurrentBountyPlayerState = BountyPlayerState;
+		}
+		else {
+			bBountyChanged = false;
+			BlasterGameState->bBountyUpdated = false;
+			return;
+		}
+	}
+	else if (HasAuthority()) {
+		bBountyChanged = false;
+		BlasterGameState->bBountyUpdated = false;
+		return;
+	}
+
+	if (bBountyChanged) {
+		SetHUDBounty();
 	}
 }
 
@@ -270,7 +283,6 @@ void ABlasterPlayerController::SetHUDMatchCountdown(int32 CountdownTime)
 		BlasterHUD->CharacterOverlay->MatchCountdownText;
 
 	if (bHUDValid) {
-
 		if (CountdownTime < 0.f) {
 			BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText());
 			return;
@@ -287,6 +299,7 @@ void ABlasterPlayerController::SetHUDMatchCountdown(int32 CountdownTime)
 void ABlasterPlayerController::SetHUDAnnouncementCountdown(float CountdownTime)
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->Announcement &&
 		BlasterHUD->Announcement->WarmupTime;

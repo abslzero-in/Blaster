@@ -16,10 +16,13 @@ class BLASTER_API ABlasterGameState : public AGameState
 	
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	bool UpdateTopScore(class ABlasterPlayerState* ScoringPlayer);
+	void UpdateTopScore(class ABlasterPlayerState* ScoringPlayer);
 
 	UPROPERTY(Replicated)
 	ABlasterPlayerState* TopScoringPlayer;
+
+	UPROPERTY(Replicated)
+	bool bBountyUpdated = false;
 private:
 
 	float TopScore = 0.f;

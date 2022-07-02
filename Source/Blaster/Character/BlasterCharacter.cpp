@@ -222,7 +222,6 @@ void ABlasterCharacter::Elim()
 		&ABlasterCharacter::ElimTimerFinished,
 		ElimDelay
 	);
-
 }
 
 void ABlasterCharacter::Destroyed()

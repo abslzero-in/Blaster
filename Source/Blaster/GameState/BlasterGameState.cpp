@@ -10,15 +10,19 @@ void ABlasterGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABlasterGameState, TopScoringPlayer);
+	DOREPLIFETIME(ABlasterGameState, bBountyUpdated);
 }
 
-bool ABlasterGameState::UpdateTopScore(class ABlasterPlayerState* ScoringPlayer)
+void ABlasterGameState::UpdateTopScore(class ABlasterPlayerState* ScoringPlayer)
 {
-	if (ScoringPlayer->GetScore() > TopScore) {                // Add  && TopScoringPlayer != ScoringPlayer
+	if (ScoringPlayer->GetScore() > TopScore && TopScore == 0.f) {
 		TopScoringPlayer = ScoringPlayer;
 		TopScore = ScoringPlayer->GetScore();
-		return true;
+		bBountyUpdated = true;
 	}
-
-	return false;
+	if (ScoringPlayer->GetScore() > TopScore && TopScoringPlayer != ScoringPlayer) {
+		TopScoringPlayer = ScoringPlayer;
+		TopScore = ScoringPlayer->GetScore();
+		bBountyUpdated = true;
+	}
 }

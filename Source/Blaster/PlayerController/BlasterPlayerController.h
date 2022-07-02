@@ -18,7 +18,7 @@ public:
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
-	void SetHUDBounty();
+	void SetHUDBountyPlayer();
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
 	void SetHUDMatchCountdown(int32 Ammo);
@@ -27,13 +27,14 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-
 	virtual float GetServerTime(); // Synced with server world clock
 	virtual void ReceivedPlayer() override; // Sync with server clock as soon as possible
 
 	void OnMatchStateSet(FName State);
 	void HandleMatchHasStarted();
 	void HandleGameOver();
+	void SetHUDBounty();
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -76,7 +77,10 @@ private:
 	float WarmupTime = 0.f;
 	float GameOverTime = 0.f;
 	uint32 CountdownInt = 0;
-
+	
+	UPROPERTY(Replicated)
+	class ABlasterPlayerState* CurrentBountyPlayerState;
+	
 	UPROPERTY(ReplicatedUsing=OnRep_MatchState)
 	FName MatchState;
 
@@ -87,6 +91,9 @@ private:
 	class ABlasterGameMode* BlasterGameMode;
 
 	UPROPERTY()
+	class ABlasterGameState* BlasterGameState;
+
+	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
 
 	bool bInitializeCharacterOverlay = false;
@@ -95,4 +102,7 @@ private:
 	float HUDMaxHealth;
 	float HUDScore;
 	int32 HUDDefeats;
+
+	UPROPERTY(Replicated)
+	bool bBountyChanged = false;
 };
