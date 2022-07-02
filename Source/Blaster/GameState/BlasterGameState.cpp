@@ -9,21 +9,16 @@ void ABlasterGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ABlasterGameState, TopScoringPlayers);
+	DOREPLIFETIME(ABlasterGameState, TopScoringPlayer);
 }
 
-void ABlasterGameState::UpdateTopScore(class ABlasterPlayerState* ScoringPlayer)
+bool ABlasterGameState::UpdateTopScore(class ABlasterPlayerState* ScoringPlayer)
 {
-	if (TopScoringPlayers.Num() == 0) {
-		TopScoringPlayers.Add(ScoringPlayer);
+	if (ScoringPlayer->GetScore() > TopScore) {                // Add  && TopScoringPlayer != ScoringPlayer
+		TopScoringPlayer = ScoringPlayer;
 		TopScore = ScoringPlayer->GetScore();
+		return true;
 	}
-	else if (ScoringPlayer->GetScore() == TopScore) {
-		TopScoringPlayers.AddUnique(ScoringPlayer);
-	}
-	else if (ScoringPlayer->GetScore() > TopScore) {
-		TopScoringPlayers.Empty();
-		TopScoringPlayers.AddUnique(ScoringPlayer);
-		TopScore = ScoringPlayer->GetScore();
-	}
+
+	return false;
 }

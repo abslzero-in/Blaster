@@ -7,6 +7,8 @@
 #include <Kismet/GameplayStatics.h>
 #include <GameFramework/PlayerStart.h>
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/GameState/BlasterGameState.h"
+#include "Net/UnrealNetwork.h"
 
 
 namespace MatchState {
@@ -24,6 +26,13 @@ void ABlasterGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	LevelStartingTime = GetWorld()->GetTimeSeconds();
+}
+
+void ABlasterGameMode::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABlasterGameMode, bUpdatedTopScore);
 }
 
 void ABlasterGameMode::Tick(float DeltaTime)
@@ -53,7 +62,6 @@ void ABlasterGameMode::Tick(float DeltaTime)
 	}
 }
 
-
 void ABlasterGameMode::OnMatchStateSet()
 {
 	Super::OnMatchStateSet();
@@ -75,9 +83,12 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
 	ABlasterPlayerState* VictimPlayerState = VictimController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
 
-	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
+	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
+
+	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && BlasterGameState)
 	{
 		AttackerPlayerState->AddToScore(1.f);
+		bUpdatedTopScore = BlasterGameState->UpdateTopScore(AttackerPlayerState);
 	}
 	if (VictimPlayerState)
 	{
@@ -102,3 +113,5 @@ void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController*
 		RestartPlayerAtPlayerStart(ElimmedController, PlayerStarts[Selection]);
 	}
 }
+
+

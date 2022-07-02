@@ -36,4 +36,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* MatchCountdownText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TopPlayerName;
+
+	UPROPERTY(meta = (BindWidget))
+	class UImage* TopPlayerImage;
 };

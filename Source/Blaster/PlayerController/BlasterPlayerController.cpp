@@ -11,7 +11,9 @@
 #include <Net/UnrealNetwork.h>
 #include <Kismet/GameplayStatics.h>
 #include "Blaster/GameMode/BlasterGameMode.h"
+#include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
@@ -24,7 +26,6 @@ void ABlasterPlayerController::BeginPlay()
 
 void ABlasterPlayerController::Tick(float DeltaTime)
 {
-
 	Super::Tick(DeltaTime);
 
 	SetHUDTime();
@@ -128,6 +129,12 @@ void ABlasterPlayerController::PollInit()
 			}
 		}
 	}
+	else {
+		BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+		if (BlasterGameMode && BlasterGameMode->bUpdatedTopScore) {
+			SetHUDBounty();
+		}
+	}
 }
 
 
@@ -199,6 +206,36 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 	}
 }
 
+void ABlasterPlayerController::SetHUDBounty()
+{
+	UE_LOG(LogTemp, Warning, TEXT("SetHUDBounty Called")); // log
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->TopPlayerName;
+	if (bHUDValid)
+	{
+		ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+
+		UE_LOG(LogTemp, Warning, TEXT("SetHUDBounty Called HUD")); // log
+		if (BlasterGameState) {
+			ABlasterPlayerState* BountyPlayerState = BlasterGameState->TopScoringPlayer;
+
+			UE_LOG(LogTemp, Warning, TEXT("SetHUDBounty Called GameState")); // log
+			if (BountyPlayerState) {
+				UE_LOG(LogTemp, Warning, TEXT("SetHUDBounty Called PlayerState")); // log
+				FString BountyPlayerName = BountyPlayerState->GetPlayerName();
+				BlasterHUD->CharacterOverlay->TopPlayerName->SetText(FText::FromString(BountyPlayerName));
+			}
+		}
+	}
+
+	BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	if (BlasterGameMode && BlasterGameMode->bUpdatedTopScore) {
+		BlasterGameMode->bUpdatedTopScore = false;
+	}
+}
+
 void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
@@ -264,9 +301,6 @@ void ABlasterPlayerController::SetHUDAnnouncementCountdown(float CountdownTime)
 
 		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 		BlasterHUD->Announcement->WarmupTime->SetText(FText::FromString(CountdownText));
-	}
-	else {
-		UE_LOG(LogTemp, Warning, TEXT("testing Hello 1234"));
 	}
 }
 

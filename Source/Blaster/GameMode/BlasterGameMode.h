@@ -25,6 +25,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, class ABlasterPlayerController* AttackerController);
 	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(EditDefaultsOnly)
 	float WarmupTime = 15.f;
@@ -36,6 +37,8 @@ public:
 	float GameOverTime = 7.f;
 
 	float LevelStartingTime = 0.f;
+	bool bUpdatedTopScore = false;
+
 private:
 	virtual void BeginPlay() override;
 	virtual void OnMatchStateSet() override;
@@ -43,4 +46,5 @@ private:
 
 public:
 	FORCEINLINE float GetGameOverTime() const { return GameOverTime; }
+	FORCEINLINE bool GetUpdatedTopScore() const { return bUpdatedTopScore; }
 };
