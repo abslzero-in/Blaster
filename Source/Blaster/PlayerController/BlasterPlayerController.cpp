@@ -131,6 +131,8 @@ void ABlasterPlayerController::PollInit()
 				SetHUDHealth(HUDHealth, HUDMaxHealth);
 				SetHUDScore(HUDScore);
 				SetHUDDefeats(HUDDefeats);
+				SetHUDWeaponAmmo(0.f);
+				SetHUDCarriedAmmo(0.f);
 			}
 		}
 	}	
@@ -213,14 +215,19 @@ void ABlasterPlayerController::SetHUDBounty()
 		BlasterHUD->CharacterOverlay &&
 		BlasterHUD->CharacterOverlay->TopPlayerName;
 
+	ABlasterPlayerState* BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+
 	if (bHUDValid) {
-		if (CurrentBountyPlayerState) {
+		if (CurrentBountyPlayerState == BlasterPlayerState) {
+			FString BountyPlayerName = "You are the Bounty";
+			BlasterHUD->CharacterOverlay->TopPlayerName->SetText(FText::FromString(BountyPlayerName));
+		}
+		else if (CurrentBountyPlayerState) {
 			FString BountyPlayerName = CurrentBountyPlayerState->GetPlayerName();
 			BlasterHUD->CharacterOverlay->TopPlayerName->SetText(FText::FromString(BountyPlayerName));
 		}
 	}
 }
-
 
 void ABlasterPlayerController::SetHUDBountyPlayer()
 {
@@ -373,7 +380,7 @@ void ABlasterPlayerController::HandleMatchHasStarted()
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	if (BlasterHUD) {
-		BlasterHUD->AddCharacterOverlay();
+		if(BlasterHUD->CharacterOverlay == nullptr) BlasterHUD->AddCharacterOverlay();
 		if (BlasterHUD->Announcement) {
 			BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
 		}

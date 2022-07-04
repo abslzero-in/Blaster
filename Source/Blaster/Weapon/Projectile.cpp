@@ -1,6 +1,5 @@
 #include "Projectile.h"
 #include <Components/BoxComponent.h>
-#include <GameFramework/ProjectileMovementComponent.h>
 #include <Particles/ParticleSystemComponent.h>
 #include <Particles/ParticleSystem.h>
 #include "Kismet/GameplayStatics.h"
@@ -24,13 +23,11 @@ AProjectile::AProjectile()
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block);
 
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
-	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 }
 
 void AProjectile::BeginPlay()
 {
-	Super::BeginPlay();
+	Super::BeginPlay(); 
 
 	if (Tracer) {
 		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
@@ -44,6 +41,7 @@ void AProjectile::BeginPlay()
 	}
 	
 	if (HasAuthority()) {
+		//CollisionBox->IgnoreActorWhenMoving(GetOwner(), true);
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 	}
 }

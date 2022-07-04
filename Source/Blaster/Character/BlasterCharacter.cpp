@@ -96,23 +96,10 @@ void ABlasterCharacter::BeginPlay()
 
 	UpdateHUDHealth();
 
-	// initialize hud ammo. Set it to 0,0 at the start of the game
-	InitHUDAmmo();
-
 	if (HasAuthority()) {
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	}
 }
-
-void ABlasterCharacter::InitHUDAmmo()
-{
-	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
-	if (BlasterPlayerController) {
-		BlasterPlayerController->SetHUDWeaponAmmo(0);
-		BlasterPlayerController->SetHUDCarriedAmmo(0);
-	}
-}
-
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -157,6 +144,9 @@ void ABlasterCharacter::PlayReloadMontage()
 		switch (Combat->EquippedWeapon->GetWeaponType())
 		{
 		case EWeaponType::EWT_AssaultRifle:
+			SectionName = FName("Rifle");
+			break;
+		case EWeaponType::EWT_RocketLauncher:
 			SectionName = FName("Rifle");
 			break;
 		default:

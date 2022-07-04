@@ -89,6 +89,11 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 
+	if (CombatState == ECombatState::ECS_Reloading) {
+		FinishReloading();
+	}
+	
+
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
 	if (HandSocket) {
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
@@ -158,6 +163,10 @@ void UCombatComponent::UpdateAmmoValues()
 void UCombatComponent::FinishReloading()
 {
 	if (Character == nullptr) return;
+
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+	AnimInstance->Montage_Stop(0.f);
+
 
 	if (Character->HasAuthority()) {
 		CombatState = ECombatState::ECS_Unoccupied;
@@ -446,4 +455,5 @@ void UCombatComponent::OnRep_CarriedAmmo()
 void UCombatComponent::InitializeCarriedAmmo()
 {
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingRocketAmmo);
 }
