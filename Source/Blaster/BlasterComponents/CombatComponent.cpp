@@ -13,7 +13,6 @@
 #include <Sound/SoundCue.h>
 #include <TimerManager.h>
 
-#define Range 80000.f;
 UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -288,7 +287,7 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
 		}
 
-		FVector End = Start + CrosshairWorldDirection * Range;
+		FVector End = Start + CrosshairWorldDirection * WEAPON_RANGE;
 
 		GetWorld()->LineTraceSingleByChannel(
 			TraceHitResult,
@@ -457,4 +456,6 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingRocketAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_Pistol, StartingPistolAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_SMG, StartingSMGAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_Shotgun, StartingShotgunAmmo);
 }

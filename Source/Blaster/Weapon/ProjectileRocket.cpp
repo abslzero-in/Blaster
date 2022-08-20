@@ -103,16 +103,16 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 
 	}
 
-	if (ProjectileLoopComponent && ProjectileLoopComponent->IsPlaying()) {
-		ProjectileLoopComponent->Stop();
-	}
-
 	GetWorldTimerManager().SetTimer(
 		DestroyTimer,
 		this,
 		&AProjectileRocket::DestroyTimerFinished,
 		DestroyTime
 	);
+
+	if (ProjectileLoopComponent && ProjectileLoopComponent->IsPlaying()) {
+		ProjectileLoopComponent->Stop();
+	}
 
 	if (ImpactParticles) {
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());

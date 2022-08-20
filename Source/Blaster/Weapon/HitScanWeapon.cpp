@@ -2,10 +2,14 @@
 
 
 #include "HitScanWeapon.h"
+#include "WeaponTypes.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include <Kismet/GameplayStatics.h>
+#include <Kismet/KismetMathLibrary.h>
 #include <Particles/ParticleSystemComponent.h>
+#include <Sound/SoundCue.h>
+#include <DrawDebugHelpers.h>
 
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
@@ -20,59 +24,106 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 	if (MuzzleFlashSocket) {
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector Start = SocketTransform.GetLocation();
-		FVector End = Start + (HitTarget - Start) * 1.25;
-
 		FHitResult FireHit;
-		UWorld* World = GetWorld();
-		if (World) {
-			World->LineTraceSingleByChannel(
-				FireHit,
-				Start,
-				End,
-				ECollisionChannel::ECC_Visibility
+
+		WeaponTraceHit(Start, HitTarget, FireHit);
+
+		ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
+		if (BlasterCharacter && HasAuthority() && InstigatorController) {
+			UGameplayStatics::ApplyDamage(
+				BlasterCharacter,
+				Damage,
+				InstigatorController,
+				this,
+				UDamageType::StaticClass()
 			);
-
-			FVector BeamEnd = End;
-
-			if (FireHit.bBlockingHit) {
-
-				BeamEnd = FireHit.ImpactPoint;
-
-				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-				if (BlasterCharacter && HasAuthority() && InstigatorController) {
-					UGameplayStatics::ApplyDamage(
-						BlasterCharacter,
-						Damage,
-						InstigatorController,
-						this,
-						UDamageType::StaticClass()
-					);
-				}
-
-				if (ImpactParticles) {
-					UGameplayStatics::SpawnEmitterAtLocation(
-						World,
-						ImpactParticles,
-						FireHit.ImpactPoint,
-						FireHit.ImpactNormal.Rotation()
-					);
-				}
-			}
-
-			if (BeamtParticles) {
-				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-					World,
-					BeamtParticles,
-					SocketTransform
-				);
-
-				if (Beam) {
-					Beam->SetVectorParameter(FName("Target"), BeamEnd);
-				}
-			}
 		}
 
+		if (ImpactParticles) {
+			UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				ImpactParticles,
+				FireHit.ImpactPoint,
+				FireHit.ImpactNormal.Rotation()
+			);
+		}
 
+		if (HitSound) {
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				HitSound,
+				FireHit.ImpactPoint
+			);
+		}
+
+		if (MuzzleFlash) {
+			UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				MuzzleFlash,
+				SocketTransform
+			);
+		}
+		if (FireSound) {
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				FireSound,
+				GetActorLocation()
+			);
+		}
 	}
 
+}
+
+FVector AHitScanWeapon::TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget)
+{
+	FVector ToTarget = (HitTarget - TraceStart).GetSafeNormal();
+	FVector SphereCenter = TraceStart + ToTarget * DistanceToSphere;
+	FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
+	FVector EndLoc = SphereCenter + RandVec;
+	FVector ToEndLoc = EndLoc - TraceStart;
+
+	/*
+
+		DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);
+		DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Green, true);
+		DrawDebugLine(GetWorld(), TraceStart, FVector(TraceStart + ToEndLoc * WEAPON_RANGE / ToEndLoc.Size()), FColor::Blue, true);
+	
+	*/
+
+	return FVector(TraceStart + ToEndLoc * WEAPON_RANGE / ToEndLoc.Size());
+}
+
+void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit)
+{
+	UWorld* World = GetWorld();
+	FVector End = bUseScatter ? TraceEndWithScatter(TraceStart, HitTarget) : TraceStart + (HitTarget - TraceStart) * 1.25;
+
+	if (World) {
+		World->LineTraceSingleByChannel(
+			OutHit,
+			TraceStart,
+			End,
+			ECollisionChannel::ECC_Visibility
+		);
+
+		FVector BeamEnd = End;
+
+		if (OutHit.bBlockingHit) {
+			BeamEnd = OutHit.ImpactPoint;
+		}
+
+		if (BeamtParticles) {
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+				World,
+				BeamtParticles,
+				TraceStart,
+				FRotator::ZeroRotator,
+				true
+			);
+
+			if (Beam) {
+				Beam->SetVectorParameter(FName("Target"), BeamEnd);
+			}
+		}
+	}
 }
