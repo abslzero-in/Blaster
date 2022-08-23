@@ -158,6 +158,9 @@ void ABlasterCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_Shotgun:
 			SectionName = FName("Rifle");        // change to smg
 			break;
+		case EWeaponType::EWT_SniperRifle:
+			SectionName = FName("Rifle");        // change to smg
+			break;
 		default:
 			break;
 		}
@@ -294,6 +297,10 @@ void ABlasterCharacter::MulticastElim_Implementation()
 			GetActorLocation()
 		);
 	}
+	if (IsLocallyControlled() && Combat && Combat->bAiming && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle) {
+		ShowSniperScopeWidget(false);
+	}
+
 }
 
 
