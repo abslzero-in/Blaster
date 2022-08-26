@@ -161,6 +161,9 @@ void ABlasterCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_SniperRifle:
 			SectionName = FName("Rifle");        // change to smg
 			break;
+		case EWeaponType::EWT_GrenadeLauncher:
+			SectionName = FName("Rifle");        // change to smg
+			break;
 		default:
 			break;
 		}

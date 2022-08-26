@@ -6,6 +6,8 @@
 #include <Sound/SoundCue.h>
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Blaster.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -50,6 +52,65 @@ void AProjectile::BeginPlay()
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	Destroy();
+}
+
+
+void AProjectile::StartDestroyTimer()
+{
+	GetWorldTimerManager().SetTimer(
+		DestroyTimer,
+		this,
+		&AProjectile::DestroyTimerFinished,
+		DestroyTime
+	);
+}
+
+void AProjectile::DestroyTimerFinished()
+{
+	Destroy();
+}
+
+void AProjectile::ExplodeDamage()
+{
+	APawn* FiringPawn = GetInstigator();
+	if (FiringPawn && HasAuthority()) {
+		AController* FiringController = FiringPawn->GetController();
+		TArray<AActor*> IgnoreList;
+		IgnoreList.Add(GetOwner());
+
+		if (FiringController) {
+			UGameplayStatics::ApplyRadialDamageWithFalloff(
+				this,
+				Damage,
+				ProjectileMinDamage,			// Minimum Damage
+				GetActorLocation(),
+				ProjectileInnerDamageRadius,
+				ProjectileOuterDamageRadius,
+				ProjectileDamageFalloffCurve,
+				UDamageType::StaticClass(),
+				IgnoreList,
+				this,
+				FiringController
+			);
+		}
+
+	}
+}
+
+void AProjectile::SpawnTrailSystem()
+{
+	if (TrailSystem)
+	{
+		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			TrailSystem,
+			GetRootComponent(),
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
 }
 
 void AProjectile::Tick(float DeltaTime)
