@@ -147,22 +147,22 @@ void ABlasterCharacter::PlayReloadMontage()
 			SectionName = FName("Rifle");
 			break;
 		case EWeaponType::EWT_RocketLauncher:
-			SectionName = FName("Rifle");		// change to RocketLauncher
+			SectionName = FName("RocketLauncher");
 			break;
 		case EWeaponType::EWT_Pistol:
-			SectionName = FName("Rifle");        // change to pistol
+			SectionName = FName("Pistol");
 			break;
 		case EWeaponType::EWT_SMG:
-			SectionName = FName("Rifle");        // change to smg
+			SectionName = FName("Pistol");	// Using pistol anim for smg
 			break;
 		case EWeaponType::EWT_Shotgun:
-			SectionName = FName("Rifle");        // change to smg
+			SectionName = FName("Shotgun");
 			break;
 		case EWeaponType::EWT_SniperRifle:
-			SectionName = FName("Rifle");        // change to smg
+			SectionName = FName("SniperRifle");
 			break;
 		case EWeaponType::EWT_GrenadeLauncher:
-			SectionName = FName("Rifle");        // change to smg
+			SectionName = FName("GrenadeLauncher");
 			break;
 		default:
 			break;

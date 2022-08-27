@@ -22,11 +22,13 @@ public:
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 	void Reload();
 
-	void UpdateAmmoValues();
-
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
 	void FireButtonPressed(bool bPressed);
+
+	UFUNCTION(BlueprintCallable)
+	void ShotgunShellReload();
+	void JumpToShotgunEnd();
 
 protected:
 	virtual void BeginPlay() override;
@@ -159,6 +161,9 @@ private:
 
 	UFUNCTION()
 	void OnRep_CombatState();
+
+	void UpdateAmmoValues();
+	void UpdateShotgunAmmoValues();
 
 public:	
 
