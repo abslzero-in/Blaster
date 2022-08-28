@@ -75,6 +75,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	class USoundCue* EquipSound;   // weapon equip sound
 
+	// Enable or disable custom depth (Weapon Outline)
+
+	void EnableCustomDepth(bool bEnable);
+
 protected:
 	virtual void BeginPlay() override;
 
