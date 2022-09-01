@@ -20,6 +20,11 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
+	void ReloadEmptyWeapon();
+	void PlayEquipWeaponSound();
+	void UpdateCarriedAmmo();
+	void AttachActorToRightHand(AActor* ActorToAttach);
+	void DropEquippedWeapon();
 	void Reload();
 
 	UFUNCTION(BlueprintCallable)
@@ -29,6 +34,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShotgunShellReload();
 	void JumpToShotgunEnd();
+
+	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 
 protected:
 	virtual void BeginPlay() override;
