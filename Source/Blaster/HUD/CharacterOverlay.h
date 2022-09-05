@@ -42,4 +42,7 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UImage* TopPlayerImage;
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* ShieldBar;
 };
