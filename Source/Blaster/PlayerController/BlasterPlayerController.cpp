@@ -132,8 +132,8 @@ void ABlasterPlayerController::PollInit()
 				if(bInitializeShield) SetHUDShield(HUDShield, HUDMaxShield);
 				if(bInitializeScore) SetHUDScore(HUDScore);
 				if(bInitializeDefeats) SetHUDDefeats(HUDDefeats);
-				SetHUDWeaponAmmo(0.f);
-				SetHUDCarriedAmmo(0.f);
+				if(bInitializeWeaponAmmo) SetHUDWeaponAmmo(0.f);
+				if(bInitializeCarriedAmmo) SetHUDCarriedAmmo(0.f);
 			}
 		}
 	}	
@@ -289,6 +289,10 @@ void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
 		BlasterHUD->CharacterOverlay->WeaponAmmoCount->SetText(FText::FromString(AmmoText));
 	}
+	else {
+		bInitializeWeaponAmmo = true;
+		HUDWeaponAmmo = Ammo;
+	}
 }
 
 void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
@@ -301,6 +305,10 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 	{
 		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
 		BlasterHUD->CharacterOverlay->CarriedAmmoCount->SetText(FText::FromString(AmmoText));
+	}
+	else {
+		bInitializeCarriedAmmo = true;
+		HUDCarriedAmmo = Ammo;
 	}
 }
 

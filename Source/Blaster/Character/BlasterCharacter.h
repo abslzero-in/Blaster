@@ -42,10 +42,11 @@ public:
 	void UpdateHUDHealth();
 	void UpdateHUDShield();
 
+	void SpawnDefaultWeapon();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	void InitHUDAmmo();
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void Turn(float Value);
@@ -61,7 +62,9 @@ protected:
 	virtual void Jump() override;
 	void FireButtonPressed();
 	void FireButtonReleased();
+	void SwapButtonPressed();
 	void PlayHitReactMontage();
+	void UpdateHUDAmmo();
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
@@ -204,6 +207,11 @@ private:
 
 	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
+
+	// Default Weapon
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AWeapon> DefaultWeapon;
 
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);
