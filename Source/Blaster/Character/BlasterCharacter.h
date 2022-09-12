@@ -29,6 +29,8 @@ public:
 	void PlayElimMontage();
 	virtual void OnRep_ReplicatedMovement() override;
 	void Elim();
+	void DropOrDestroyWeapon();
+	void DropWeapon(AWeapon* Weapon);
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 	virtual void Destroyed() override;

@@ -45,4 +45,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* ShieldBar;
+
+	UPROPERTY(meta = (BindWidget))
+	class UImage* HighPingImage;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* HighPingAnimation;
 };

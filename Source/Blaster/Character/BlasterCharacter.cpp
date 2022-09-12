@@ -276,14 +276,8 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 
 void ABlasterCharacter::Elim()
 {
-	if (Combat && Combat->EquippedWeapon) {
-		if (Combat->EquippedWeapon->bDestroyWeapon) {
-			Combat->EquippedWeapon->Destroy();
-		}
-		else {
-			Combat->EquippedWeapon->Dropped();
-		}
-	}
+	DropOrDestroyWeapon();
+
 	MulticastElim();
 	GetWorldTimerManager().SetTimer(
 		ElimTimer,
@@ -291,6 +285,31 @@ void ABlasterCharacter::Elim()
 		&ABlasterCharacter::ElimTimerFinished,
 		ElimDelay
 	);
+}
+
+void ABlasterCharacter::DropOrDestroyWeapon()
+{
+	if (Combat) {
+		if (Combat->EquippedWeapon) {
+			DropWeapon(Combat->EquippedWeapon);
+		}
+		if (Combat->SecondaryWeapon) {
+			DropWeapon(Combat->SecondaryWeapon);
+		}
+
+	}
+}
+
+void ABlasterCharacter::DropWeapon(AWeapon* Weapon)
+{
+	if (Weapon == nullptr) return;
+
+	if (Weapon->bDestroyWeapon) {
+		Weapon->Destroy();
+	}
+	else {
+		Weapon->Dropped();
+	}
 }
 
 void ABlasterCharacter::Destroyed()
@@ -646,14 +665,24 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 
 	if ((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold) {
 		GetMesh()->SetVisibility(false);
-		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh()) {
-			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		if (Combat) {
+			if (Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh()) {
+				Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+			}
+			if (Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh()) {
+				Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+			}
 		}
 	}
 	else {
 		GetMesh()->SetVisibility(true);
-		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh()) {
-			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		if (Combat) {
+			if (Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh()) {
+				Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+			}
+			if (Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh()) {
+				Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+			}
 		}
 	}
 }

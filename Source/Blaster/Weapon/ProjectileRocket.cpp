@@ -81,8 +81,8 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	if (CollisionBox) {
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
-	if (TrailSystemComponent && TrailSystemComponent->GetSystemInstance()) {
-		TrailSystemComponent->GetSystemInstance()->Deactivate();
+	if (TrailSystemComponent && TrailSystemComponent->GetSystemInstanceController() && TrailSystemComponent->GetSystemInstanceController()->GetSoloSystemInstance()) {
+		TrailSystemComponent->GetSystemInstanceController()->GetSoloSystemInstance()->Deactivate();
 	}
 }
 
