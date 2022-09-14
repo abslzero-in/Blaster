@@ -6,7 +6,6 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include <Kismet/GameplayStatics.h>
-#include <Kismet/KismetMathLibrary.h>
 #include <Particles/ParticleSystemComponent.h>
 #include <Sound/SoundCue.h>
 #include <DrawDebugHelpers.h>
@@ -74,21 +73,10 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 
 }
 
-FVector AHitScanWeapon::TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget)
-{
-	FVector ToTarget = (HitTarget - TraceStart).GetSafeNormal();
-	FVector SphereCenter = TraceStart + ToTarget * DistanceToSphere;
-	FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
-	FVector EndLoc = SphereCenter + RandVec;
-	FVector ToEndLoc = EndLoc - TraceStart;
-
-	return FVector(TraceStart + ToEndLoc * WEAPON_RANGE / ToEndLoc.Size());
-}
-
 void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit)
 {
 	UWorld* World = GetWorld();
-	FVector End = bUseScatter ? TraceEndWithScatter(TraceStart, HitTarget) : TraceStart + (HitTarget - TraceStart) * 1.25;
+	FVector End = TraceStart + (HitTarget - TraceStart) * 1.25;
 
 	if (World) {
 		World->LineTraceSingleByChannel(

@@ -25,6 +25,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
+	void StopReloadMontage();
 	void PlayReloadMontage();
 	void PlayElimMontage();
 	virtual void OnRep_ReplicatedMovement() override;
@@ -101,6 +102,9 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPress();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSwapButtonPress();
 
 	float AO_Yaw;
 	float InterpAO_Yaw;

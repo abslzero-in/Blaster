@@ -18,6 +18,16 @@ enum class EWeaponState : uint8 {
 	EWS_Max UMETA(DisplayName = "DefaultMax")
 };
 
+UENUM(BlueprintType)
+enum class EFireType : uint8
+{
+	EFT_HitScan UMETA(DisplayName = "Hit Scan Weapon"),
+	EFT_Projectile UMETA(DisplayName = "Projectile Weapon"),
+	EFT_Shotgun UMETA(DisplayName = "Shotgun Weapon"),
+
+	EFT_MAX UMETA(DisplayName = "DefaultMAX")
+};
+
 UCLASS()
 class BLASTER_API AWeapon : public AActor
 {
@@ -74,6 +84,12 @@ public:
 	bool bAutomatic = true;
 
 	UPROPERTY(EditAnywhere)
+	EFireType FireType;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	bool bUseScatter = false;
+
+	UPROPERTY(EditAnywhere)
 	class USoundCue* EquipSound;   // weapon equip sound
 
 	// Enable or disable custom depth (Weapon Outline)
@@ -81,6 +97,7 @@ public:
 	void EnableCustomDepth(bool bEnable);
 
 	bool bDestroyWeapon = false;
+	FVector TraceEndWithScatter(const FVector& HitTarget);
 
 protected:
 	virtual void BeginPlay() override;
@@ -106,6 +123,14 @@ protected:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex
 	);
+
+	// Trace Scatter
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float DistanceToSphere = 800.f;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float SphereRadius = 75.f;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")

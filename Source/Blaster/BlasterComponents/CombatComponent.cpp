@@ -108,6 +108,11 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::SwapWeapons()
 {
+	if (CombatState == ECombatState::ECS_Reloading) {
+		CombatState = ECombatState::ECS_Unoccupied;
+		Character->StopReloadMontage();
+	}
+
 	AWeapon* TempWeapon = EquippedWeapon;
 	EquippedWeapon = SecondaryWeapon;
 	SecondaryWeapon = TempWeapon;
@@ -120,7 +125,6 @@ void UCombatComponent::SwapWeapons()
 
 	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
 	AttachActorToBackpack(SecondaryWeapon);
-
 }
 
 void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
@@ -328,6 +332,7 @@ void UCombatComponent::OnRep_CombatState()
 		if (bFireButtonPressed) {
 			Fire();
 		}
+		Character->StopReloadMontage();
 		break;
 	case ECombatState::ECS_Reloading:
 		HandleReload();
@@ -377,12 +382,43 @@ void UCombatComponent::ShotgunShellReload()
 void UCombatComponent::Fire()
 {
 	if (CanFire()) {
-		ServerFire(HitTarget);
 		if (EquippedWeapon) {
 			CrosshairShootingFactor = CrosshairShootingFactorValue;
+			switch (EquippedWeapon->FireType)
+			{
+			case EFireType::EFT_Projectile:
+				FireProjectileWeapon();
+				break;
+			case EFireType::EFT_HitScan:
+				FireHitScanWeapon();
+				break;
+			case EFireType::EFT_Shotgun:
+				FireShotgun();
+				break;
+			}
 		}
 		StartFireTimer();
 	}
+}
+
+void UCombatComponent::FireProjectileWeapon()
+{
+	LocalFire(HitTarget);
+	ServerFire(HitTarget);
+}
+
+void UCombatComponent::FireHitScanWeapon()
+{
+	if (EquippedWeapon)
+	{
+		HitTarget = EquippedWeapon->bUseScatter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
+		LocalFire(HitTarget);
+		ServerFire(HitTarget);
+	}
+}
+
+void UCombatComponent::FireShotgun()
+{
 
 }
 
@@ -544,16 +580,24 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
+	if (Character && Character->IsLocallyControlled()) return;
+	LocalFire(TraceHitTarget);
+}
+
+void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
+{
 	if (EquippedWeapon == nullptr) return;
 
-	if (Character && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun) {
+	if (Character && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
 		CombatState = ECombatState::ECS_Unoccupied;
 		return;
 	}
 
-	if (Character && CombatState == ECombatState::ECS_Unoccupied) {
+	if (Character && CombatState == ECombatState::ECS_Unoccupied)
+	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
 	}

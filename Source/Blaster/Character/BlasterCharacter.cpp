@@ -167,6 +167,16 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
+void ABlasterCharacter::StopReloadMontage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ReloadMontage) {
+		AnimInstance->Montage_Stop(0.f, ReloadMontage);
+	}
+}
+
 void ABlasterCharacter::PlayReloadMontage()
 {
 	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
@@ -480,6 +490,13 @@ void ABlasterCharacter::ServerEquipButtonPress_Implementation()
 	}
 }
 
+void ABlasterCharacter::ServerSwapButtonPress_Implementation()
+{
+	if (Combat) {
+		Combat->SwapWeapons();
+	}
+}
+
 void ABlasterCharacter::CrouchButtonPressed()
 {
 	if (bDisableGameplay) return;
@@ -571,7 +588,6 @@ void ABlasterCharacter::SimProxiesTurn()
 		return;
 	}
 
-	
 	ProxyRotatorLastFrame = ProxyRotation;
 	ProxyRotation = GetActorRotation();
 	ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotatorLastFrame).Yaw;
@@ -579,7 +595,8 @@ void ABlasterCharacter::SimProxiesTurn()
 	if (FMath::Abs(ProxyYaw) > TurnThreshold) {
 		if (ProxyYaw > TurnThreshold) {
 			TurningInPlace = ETurningInPlace::ETIP_Right;
-		} else if (ProxyYaw < -TurnThreshold) {
+		}
+		else if (ProxyYaw < -TurnThreshold) {
 			TurningInPlace = ETurningInPlace::ETIP_Left;
 		}
 		else {
@@ -622,7 +639,7 @@ void ABlasterCharacter::SwapButtonPressed()
 {
 	if (bDisableGameplay) return;
 	if (Combat && Combat->ShouldSwapWeapons()) {
-		Combat->SwapWeapons();
+		ServerSwapButtonPress();
 	}
 }
 
