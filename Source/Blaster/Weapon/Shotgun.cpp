@@ -3,12 +3,13 @@
 
 #include "Shotgun.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "Blaster/Character/BlasterCharacter.h"
 #include <Kismet/GameplayStatics.h>
 #include <Particles/ParticleSystemComponent.h>
 #include <Sound/SoundCue.h>
 #include "Kismet/KismetMathLibrary.h"
-
+#include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
 
 void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& TraceHitTargets)
 {
@@ -59,19 +60,39 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& TraceHitTargets)
 			}
 		}
 
+		TArray<ABlasterCharacter*> HitCharacters;
+
 		for (auto HitPair : HitMap) {
 			ABlasterCharacter* BlasterCharacter = HitPair.Key;
-			if (HitPair.Key && HasAuthority() && InstigatorController) {
-				UGameplayStatics::ApplyDamage(
-					BlasterCharacter,
-					Damage * HitPair.Value,
-					InstigatorController,
-					this,
-					UDamageType::StaticClass()
-				);
+			if (HitPair.Key && InstigatorController) {
+				if (HasAuthority() && !bUseServerSideRewind) {
+					UGameplayStatics::ApplyDamage(
+						BlasterCharacter,
+						Damage * HitPair.Value,
+						InstigatorController,
+						this,
+						UDamageType::StaticClass()
+					);
+				}
+				if (!HasAuthority() && bUseServerSideRewind) {
+					BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
+					BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
+
+				}
+
+				HitCharacters.Add(HitPair.Key);
 			}
 		}
 
+		if (BlasterOwnerCharacter && BlasterOwnerCharacter && BlasterOwnerCharacter->GetLagCompensation() && BlasterOwnerController && BlasterOwnerCharacter->IsLocallyControlled()) {
+			BlasterOwnerCharacter->GetLagCompensation()->ServerShotgunScoreRequest(
+				HitCharacters,
+				Start,
+				TraceHitTargets,
+				BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime,
+				this
+			);
+		}
 
 	}
 }

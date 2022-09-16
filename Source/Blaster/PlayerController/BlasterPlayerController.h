@@ -36,7 +36,7 @@ public:
 	void HandleGameOver();
 	void SetHUDBounty();
 
-
+	float SingleTripTime = 0.f;
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
