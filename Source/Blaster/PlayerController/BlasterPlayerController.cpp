@@ -101,6 +101,10 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 			if (PlayerState->GetCompressedPing() * 4 > HighPingThreshold) {		// ping is compressed, mul by 4 to get actual value
 				HighPingWarning();
 				PingAnimationRunningTime = 0.f;
+				ServerReportPingStatus(true);
+			}
+			else {
+				ServerReportPingStatus(false);	
 			}
 		}
 		HighPingRunningTime = 0.f;
@@ -117,6 +121,11 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 			BlasterHUD->CharacterOverlay->StopAnimation(BlasterHUD->CharacterOverlay->HighPingAnimation);
 		}
 	}
+}
+
+void ABlasterPlayerController::ServerReportPingStatus_Implementation(bool bHighPing)
+{
+	HighPingDelegate.Broadcast(bHighPing);
 }
 
 void ABlasterPlayerController::ClientJoinMidgame_Implementation(FName StateOfMatch, float Warmup, float Match, float GameOver, float StartingTime)

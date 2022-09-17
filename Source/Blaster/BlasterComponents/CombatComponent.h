@@ -37,6 +37,12 @@ public:
 	void ShotgunShellReload();
 	void JumpToShotgunEnd();
 
+	UFUNCTION(BlueprintCallable)
+	void FinishSwap();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishSwapAttachWeapons();
+
 	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 
 	bool bLocallyReloading = false;

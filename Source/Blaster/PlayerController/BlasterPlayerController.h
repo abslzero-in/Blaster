@@ -9,6 +9,9 @@
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bPingTooHigh);
+
 UCLASS()
 class BLASTER_API ABlasterPlayerController : public APlayerController
 {
@@ -37,6 +40,9 @@ public:
 	void SetHUDBounty();
 
 	float SingleTripTime = 0.f;
+
+	FHighPingDelegate HighPingDelegate;
+
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
@@ -129,6 +135,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Ping)
 	float CheckPingFrequency = 20.f;
+
+	UFUNCTION(Server, Reliable)
+	void ServerReportPingStatus(bool bHighPing);
 
 	UPROPERTY(EditAnywhere, Category = Ping)
 	float HighPingThreshold = 100.f;
