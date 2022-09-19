@@ -24,7 +24,9 @@
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "Blaster/BlasterComponents/LagCompensationComponent.h"
-
+#include <NiagaraComponent.h>
+#include <NiagaraFunctionLibrary.h>
+#include "Blaster/GameState/BlasterGameState.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -175,6 +177,11 @@ void ABlasterCharacter::PollInit()
 		{
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
+
+			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+			if (BlasterGameState && BlasterGameState->TopScoringPlayer == BlasterPlayerState) {
+				MulticastGainedLead();
+			}
 		}
 	}
 
@@ -220,7 +227,6 @@ void ABlasterCharacter::PostInitializeComponents()
 	}
 }
 
-
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -250,6 +256,33 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &ABlasterCharacter::LookUp);
 }
 
+void ABlasterCharacter::MulticastGainedLead_Implementation()
+{
+	if (CrownSystem == nullptr) return;
+
+	if (CrownComponent == nullptr) {
+		CrownComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			CrownSystem,
+			GetCapsuleComponent(),
+			FName(),
+			GetActorLocation() + FVector(0.f, 0.f, 100.f),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
+
+	if (CrownComponent) {
+		CrownComponent->Activate();
+	}
+}
+
+void ABlasterCharacter::MulticastLostLead_Implementation()
+{
+	if (CrownComponent) {
+		CrownComponent->DestroyComponent();
+	}
+}
 
 void ABlasterCharacter::PlayFireMontage(bool bAiming)
 {
@@ -390,17 +423,10 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastMovementReplication = 0.f;
 }
 
-void ABlasterCharacter::Elim()
+void ABlasterCharacter::Elim(bool bPlayerLeftGame)
 {
 	DropOrDestroyWeapon();
-
-	MulticastElim();
-	GetWorldTimerManager().SetTimer(
-		ElimTimer,
-		this,
-		&ABlasterCharacter::ElimTimerFinished,
-		ElimDelay
-	);
+	MulticastElim(bPlayerLeftGame);
 }
 
 void ABlasterCharacter::DropOrDestroyWeapon()
@@ -444,8 +470,9 @@ void ABlasterCharacter::Destroyed()
 	}
 }
 
-void ABlasterCharacter::MulticastElim_Implementation()
+void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 {
+	bLeftGame = bPlayerLeftGame;
 	if (BlasterPlayerController) {
 		BlasterPlayerController->SetHUDWeaponAmmo(0);
 	}
@@ -492,6 +519,10 @@ void ABlasterCharacter::MulticastElim_Implementation()
 		);
 	}
 
+	if (CrownComponent) {
+		CrownComponent->DestroyComponent();
+	}
+
 	if (ElimBotSound) {
 		UGameplayStatics::SpawnSoundAtLocation(
 			this,
@@ -503,13 +534,22 @@ void ABlasterCharacter::MulticastElim_Implementation()
 		ShowSniperScopeWidget(false);
 	}
 
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&ABlasterCharacter::ElimTimerFinished,
+		ElimDelay
+	);
 }
 
 void ABlasterCharacter::ElimTimerFinished()
 {
 	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
-	if (BlasterGameMode) {
+	if (BlasterGameMode && !bLeftGame) {
 		BlasterGameMode->RequestRespawn(this, Controller);
+	}
+	if (bLeftGame && IsLocallyControlled()) {
+		OnLeftGame.Broadcast();
 	}
 
 	if (ElimBotComponent) {
@@ -517,7 +557,14 @@ void ABlasterCharacter::ElimTimerFinished()
 	}
 }
 
-
+void ABlasterCharacter::ServerLeaveGame_Implementation()
+{
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+	if (BlasterGameMode && BlasterPlayerState) {
+		BlasterGameMode->PlayerLeftGame(BlasterPlayerState);
+	}
+}
 
 void ABlasterCharacter::UpdateHUDHealth()
 {

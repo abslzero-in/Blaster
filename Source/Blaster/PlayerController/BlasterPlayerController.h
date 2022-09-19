@@ -45,6 +45,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 	void SetHUDTime();
 
 	void PollInit();
@@ -78,10 +79,22 @@ protected:
 	void HighPingWarning();
 	void StopHighPingWarning();
 	void CheckPing(float DeltaTime);
+	void ShowESCMenu();
+
 
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
+
+	// esc menu
+
+	UPROPERTY(EditAnywhere, Category = HUD)
+	TSubclassOf<class UUserWidget> ESCMenuWidget;
+
+	UPROPERTY()
+	class UESCWidget* ESCMenu;
+
+	bool bESCMenuOpen = false;
 
 	float LevelStartingTime = 0.f;
 	float MatchTime = 0.f;

@@ -104,11 +104,11 @@ void UMultiplayerSessionsSubsystem::DestroySession()
 	}
 
 	DestroySessionCompleteDelegateHandle = SessionInterface->AddOnDestroySessionCompleteDelegate_Handle(DestroySessionCompleteDelegate);
+
 	if (!SessionInterface->DestroySession(NAME_GameSession)) {
 		SessionInterface->ClearOnDestroySessionCompleteDelegate_Handle(DestroySessionCompleteDelegateHandle);
 		MultiplayerOnDestroySessionComplete.Broadcast(false);
 	}
-
 }
 
 void UMultiplayerSessionsSubsystem::StartSession()

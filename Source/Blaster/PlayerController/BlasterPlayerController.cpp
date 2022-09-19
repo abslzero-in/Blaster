@@ -16,6 +16,7 @@
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Engine/Engine.h"
 #include <Components/Image.h>
+#include "Blaster/HUD/ESCWidget.h"
 
 
 void ABlasterPlayerController::BeginPlay()
@@ -24,6 +25,15 @@ void ABlasterPlayerController::BeginPlay()
 
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 	ServerCheckMatchState();
+}
+
+void ABlasterPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+	if (InputComponent == nullptr) return;
+
+	InputComponent->BindAction("ESCMenu", IE_Pressed, this, &ABlasterPlayerController::ShowESCMenu);
+
 }
 
 
@@ -119,6 +129,25 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		PingAnimationRunningTime += DeltaTime;
 		if (PingAnimationRunningTime > HighPingDuration) {
 			BlasterHUD->CharacterOverlay->StopAnimation(BlasterHUD->CharacterOverlay->HighPingAnimation);
+		}
+	}
+}
+
+void ABlasterPlayerController::ShowESCMenu()
+{
+	if (ESCMenuWidget == nullptr) return;
+
+	if (ESCMenu == nullptr) {
+		ESCMenu = CreateWidget<UESCWidget>(GetWorld(), ESCMenuWidget);
+	}
+
+	if (ESCMenu) {
+		bESCMenuOpen = !bESCMenuOpen;
+		if (bESCMenuOpen) {
+			ESCMenu->MenuSetup();
+		}
+		else {
+			ESCMenu->MenuTearDown();
 		}
 	}
 }
