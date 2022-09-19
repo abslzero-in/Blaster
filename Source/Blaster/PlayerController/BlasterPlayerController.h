@@ -43,6 +43,8 @@ public:
 
 	FHighPingDelegate HighPingDelegate;
 
+	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -81,7 +83,8 @@ protected:
 	void CheckPing(float DeltaTime);
 	void ShowESCMenu();
 
-
+	UFUNCTION(Client, Reliable)
+	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;

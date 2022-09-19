@@ -117,6 +117,7 @@ void UCombatComponent::SwapWeapons()
 	}
 
 	Character->bFinishedSwapping = false;
+	SetAiming(false);
 	Character->PlaySwapMontage();
 	CombatState = ECombatState::ECS_Swapping;
 
