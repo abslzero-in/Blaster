@@ -47,6 +47,7 @@ public:
 	class UAnnouncement* Announcement;
 
 	void AddAnnouncement();
+	void RemoveCrosshair();
 
 	void AddElimAnnouncement(FString Attacker, FString Victim);
 protected:

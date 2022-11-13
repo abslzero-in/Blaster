@@ -315,7 +315,6 @@ public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
 	bool IsAiming();
-
 	ECombatState GetCombatState() const;
 	AWeapon* GetEquippedWeapon();
 	FVector GetHitTarget() const;

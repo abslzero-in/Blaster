@@ -335,6 +335,7 @@ void ABlasterCharacter::PlayReloadMontage()
 			break;
 		case EWeaponType::EWT_SniperRifle:
 			SectionName = FName("SniperRifle");
+			ShowSniperScopeWidget(false);
 			break;
 		case EWeaponType::EWT_GrenadeLauncher:
 			SectionName = FName("GrenadeLauncher");
@@ -530,6 +531,7 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 			GetActorLocation()
 		);
 	}
+
 	if (IsLocallyControlled() && Combat && Combat->bAiming && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle) {
 		ShowSniperScopeWidget(false);
 	}
@@ -918,7 +920,6 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 
 bool ABlasterCharacter::IsWeaponEquipped()
 {
-
 	return (Combat && Combat->EquippedWeapon);
 }
 

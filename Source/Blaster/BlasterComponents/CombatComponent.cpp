@@ -75,7 +75,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
-	if (Character == nullptr || EquippedWeapon == nullptr) return;
+	if (Character == nullptr || EquippedWeapon == nullptr || bAiming == bIsAiming) return;
 
 	bAiming = bIsAiming;
 	ServerSetAiming(bIsAiming);
@@ -117,7 +117,9 @@ void UCombatComponent::SwapWeapons()
 	}
 
 	Character->bFinishedSwapping = false;
-	SetAiming(false);
+	if (bAiming) {
+		SetAiming(false);
+	}
 	Character->PlaySwapMontage();
 	CombatState = ECombatState::ECS_Swapping;
 
@@ -385,6 +387,9 @@ void UCombatComponent::HandleReload()
 {
 	if(Character) {
 		Character->PlayReloadMontage();
+		if (bAiming) {
+			bAiming = false;
+		}
 	}
 }
 
@@ -571,6 +576,15 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				CrosshairInAirFactor -
 				CrosshairAimFactor +
 				CrosshairShootingFactor;
+
+			if (Character && EquippedWeapon && Character->IsLocallyControlled() && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle) {
+				if (Character->IsAiming()) {
+					HUDPackage.CrosshairsColor = FLinearColor::Transparent;
+				}
+				else {
+					HUDPackage.CrosshairsColor = FLinearColor::White;
+				}
+			}
 
 			HUD->setHUDPackage(HUDPackage);
 		}
