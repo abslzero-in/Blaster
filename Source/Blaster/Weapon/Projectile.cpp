@@ -76,12 +76,12 @@ void AProjectile::ExplodeDamage()
 	if (FiringPawn && HasAuthority()) {
 		AController* FiringController = FiringPawn->GetController();
 		TArray<AActor*> IgnoreList;
-		IgnoreList.Add(GetOwner());
+		IgnoreList.Add(GetInstigator());
 
 		if (FiringController) {
 			UGameplayStatics::ApplyRadialDamageWithFalloff(
 				this,
-				Damage,
+				ProjectileMaxDamage,
 				ProjectileMinDamage,			// Minimum Damage
 				GetActorLocation(),
 				ProjectileInnerDamageRadius,
@@ -93,7 +93,6 @@ void AProjectile::ExplodeDamage()
 				FiringController
 			);
 		}
-
 	}
 }
 

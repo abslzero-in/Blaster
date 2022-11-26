@@ -335,7 +335,6 @@ void ABlasterCharacter::PlayReloadMontage()
 			break;
 		case EWeaponType::EWT_SniperRifle:
 			SectionName = FName("SniperRifle");
-			ShowSniperScopeWidget(false);
 			break;
 		case EWeaponType::EWT_GrenadeLauncher:
 			SectionName = FName("GrenadeLauncher");
@@ -838,26 +837,36 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 {
 	if (!IsLocallyControlled()) return;
 
-	if ((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold) {
-		GetMesh()->SetVisibility(false);
-		if (Combat) {
-			if (Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh()) {
-				Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
-			}
-			if (Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh()) {
-				Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
-			}
-		}
+	if ((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold || bSniperScopeActive) {
+		HidePlayerMesh();
 	}
 	else {
-		GetMesh()->SetVisibility(true);
-		if (Combat) {
-			if (Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh()) {
-				Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
-			}
-			if (Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh()) {
-				Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = false;
-			}
+		UnHidePlayerMesh();
+	}
+}
+
+void ABlasterCharacter::UnHidePlayerMesh()
+{
+	GetMesh()->SetVisibility(true);
+	if (Combat) {
+		if (Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh()) {
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+		if (Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh()) {
+			Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+	}
+}
+
+void ABlasterCharacter::HidePlayerMesh()
+{
+	GetMesh()->SetVisibility(false);
+	if (Combat) {
+		if (Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh()) {
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+		if (Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh()) {
+			Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
 		}
 	}
 }

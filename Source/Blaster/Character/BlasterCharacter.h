@@ -67,6 +67,9 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLostLead();
 
+	UPROPERTY(BlueprintReadWrite)
+	bool bSniperScopeActive = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -209,6 +212,10 @@ private:
 	UAnimMontage* SwapMontage;
 
 	void HideCameraIfCharacterClose();
+
+	void UnHidePlayerMesh();
+
+	void HidePlayerMesh();
 
 	UPROPERTY(EditAnywhere)
 	float CameraThreshold = 200.f;

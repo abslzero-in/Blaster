@@ -75,10 +75,11 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
-	if (Character == nullptr || EquippedWeapon == nullptr || bAiming == bIsAiming) return;
+	if (Character == nullptr || EquippedWeapon == nullptr || bAiming == bIsAiming || CombatState == ECombatState::ECS_Reloading) return;
 
 	bAiming = bIsAiming;
 	ServerSetAiming(bIsAiming);
+
 	if (Character) {
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
@@ -86,6 +87,7 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	if (Character->IsLocallyControlled() && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle) {
 		Character->ShowSniperScopeWidget(bIsAiming);
 	}
+
 	if(Character->IsLocallyControlled()) bAimButtonPressed = bAiming;
 }
 
@@ -388,7 +390,7 @@ void UCombatComponent::HandleReload()
 	if(Character) {
 		Character->PlayReloadMontage();
 		if (bAiming) {
-			bAiming = false;
+			SetAiming(false);
 		}
 	}
 }

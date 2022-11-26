@@ -52,13 +52,9 @@ void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 					OwnerController->GetServerTime() - OwnerController->SingleTripTime,
 					OwnerCharacter->GetEquippedWeapon()
 				);
-
 			}
-
-			
 		}
 	}
-
 
 	// calling last as onhit destroys the object on super
 	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);

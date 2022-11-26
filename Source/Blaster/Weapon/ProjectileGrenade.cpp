@@ -6,8 +6,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Components/BoxComponent.h"
-
-
+#include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
 
 
 
@@ -32,19 +33,25 @@ void AProjectileGrenade::BeginPlay()
 
 	ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &AProjectileGrenade::OnBounce);
 
-	if (!HasAuthority()) {
+	if (HasAuthority()) {
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileGrenade::OnHit);
 	}
 }
 
 void AProjectileGrenade::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// call destroyed if hit target
+	ABlasterCharacter* HitCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (HitCharacter) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("This message will appear on the screen!"));
+		Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
+		Destroy();
+	}
 }
 
 void AProjectileGrenade::Destroyed()
 {
 	ExplodeDamage();
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("ThSVAAVASV"));
 
 	Super::Destroyed();
 }

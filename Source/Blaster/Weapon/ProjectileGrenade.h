@@ -30,5 +30,4 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	USoundCue* BounceSound;
-	
 };
