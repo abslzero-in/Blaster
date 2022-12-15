@@ -17,6 +17,7 @@
 #include <Kismet/GameplayStatics.h>
 #include "Blaster/Blaster.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/AI/BlasterAIController.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include <TimerManager.h>
 #include <Sound/SoundCue.h>
@@ -410,7 +411,16 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 		if (BlasterGameMode) {
 			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
-			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+			ABlasterAIController* AttackerAIController = Cast<ABlasterAIController>(InstigatorController);
+			if (AttackerAIController) {
+				BlasterGameMode->PlayerEliminatedByAI(this, BlasterPlayerController);
+			}
+			if (BlasterPlayerController) {
+				BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+			}
+			else {
+				BlasterGameMode->EnemyAIEliminated(this, AttackerController);
+			}
 		}
 	}
 
@@ -552,7 +562,6 @@ void ABlasterCharacter::ElimTimerFinished()
 	if (bLeftGame && IsLocallyControlled()) {
 		OnLeftGame.Broadcast();
 	}
-
 	if (ElimBotComponent) {
 		ElimBotComponent->DestroyComponent();
 	}
@@ -707,7 +716,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		TurnInPlace(DeltaTime);
 	}
 
-	if (Speed > 0.f || bIsInAir) {
+	if (Speed > 0.f || bIsInAir || !IsPlayerControlled()) {
 		bRotateRootBone = false;
 
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
@@ -803,10 +812,10 @@ void ABlasterCharacter::SwapButtonPressed()
 
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
 {
-	if (AO_Yaw > 45.f) {
+	if (AO_Yaw > TurnInPlaceAngle) {
 		TurningInPlace = ETurningInPlace::ETIP_Right;
 	}
-	else if (AO_Yaw < -45.f) {
+	else if (AO_Yaw < -TurnInPlaceAngle) {
 		TurningInPlace = ETurningInPlace::ETIP_Right;
 	}
 
@@ -814,7 +823,7 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f);
 		AO_Yaw = InterpAO_Yaw;
 
-		if (FMath::Abs(AO_Yaw) < 15.f) {
+		if (FMath::Abs(AO_Yaw) < TurnInPlaceAimAngle) {
 			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		}
@@ -970,6 +979,7 @@ void ABlasterCharacter::RotateInPlace(float DeltaTime)
 
 		return;
 	}
+
 	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled()) {
 		AimOffset(DeltaTime);
 	}

@@ -62,7 +62,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (Character && Character->IsLocallyControlled())
+	if (Character && Character->IsLocallyControlled() && Character->IsPlayerControlled())
 	{
 		FHitResult HitResult;
 		TraceUnderCrosshairs(HitResult);
@@ -251,6 +251,10 @@ void UCombatComponent::Reload()
 void UCombatComponent::ServerReload_Implementation()
 {
 	if (Character == nullptr || EquippedWeapon == nullptr) return;
+
+	if (bAiming) {
+		SetAiming(false);
+	}
 
 	CombatState = ECombatState::ECS_Reloading;
 	if(!Character->IsLocallyControlled()) HandleReload();

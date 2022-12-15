@@ -17,18 +17,18 @@ void UOverheadWidget::ShowPlayerNetRole(APawn* InPawn)
 	FString Role;
 	switch (LocalRole)
 	{
-	case ENetRole::ROLE_None:
-		Role = FString("None");
-		break;
-	case ENetRole::ROLE_SimulatedProxy:
-		Role = FString("SimulatedProxy");
-		break;
-	case ENetRole::ROLE_AutonomousProxy:
-		Role = FString("AutonomousProxy");
-		break;
-	case ENetRole::ROLE_Authority:
-		Role = FString("Authority");
-		break;
+		case ENetRole::ROLE_None:
+			Role = FString("None");
+			break;
+		case ENetRole::ROLE_SimulatedProxy:
+			Role = FString("SimulatedProxy");
+			break;
+		case ENetRole::ROLE_AutonomousProxy:
+			Role = FString("AutonomousProxy");
+			break;
+		case ENetRole::ROLE_Authority:
+			Role = FString("Authority");
+			break;
 	}
 
 	FString LocalRoleString = FString::Printf(TEXT("Local Role: %s"), *Role);
@@ -36,10 +36,8 @@ void UOverheadWidget::ShowPlayerNetRole(APawn* InPawn)
 	SetDisplayText(LocalRoleString);
 }
 
-void UOverheadWidget::OnLevelRemovedFromWorld(ULevel* InLevel, UWorld* InWorld)
+void UOverheadWidget::NativeDestruct()
 {
 	RemoveFromParent();
-	Super::OnLevelRemovedFromWorld(InLevel, InWorld);
-
-
+	Super::NativeDestruct();
 }

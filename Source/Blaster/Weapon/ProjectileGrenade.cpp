@@ -40,19 +40,16 @@ void AProjectileGrenade::BeginPlay()
 
 void AProjectileGrenade::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	ABlasterCharacter* OwnerCharacter = Cast<ABlasterCharacter>(GetOwner());
 	ABlasterCharacter* HitCharacter = Cast<ABlasterCharacter>(OtherActor);
-	if (HitCharacter) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("This message will appear on the screen!"));
+	if (OwnerCharacter && HitCharacter && HitCharacter != OwnerCharacter) {
 		Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
-		Destroy();
 	}
 }
 
 void AProjectileGrenade::Destroyed()
 {
 	ExplodeDamage();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("ThSVAAVASV"));
-
 	Super::Destroyed();
 }
 

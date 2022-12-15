@@ -318,6 +318,13 @@ private:
 	UPROPERTY()
 	class UNiagaraComponent* CrownComponent;
 
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float TurnInPlaceAngle = 45.f;
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float TurnInPlaceAimAngle = 15.f;
+
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();

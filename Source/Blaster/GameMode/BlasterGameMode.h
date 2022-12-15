@@ -20,12 +20,16 @@ class BLASTER_API ABlasterGameMode : public AGameMode
 	GENERATED_BODY()
 
 public:
-
+	
 	ABlasterGameMode();
 	virtual void Tick(float DeltaTime) override;
 	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, class ABlasterPlayerController* AttackerController);
+	virtual void PlayerEliminatedByAI(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController);
+	virtual void EnemyAIEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* AttackerController);
 	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 	void PlayerLeftGame(class ABlasterPlayerState* PlayerLeaving);
+
+	void SpawnAI();
 
 	UPROPERTY(EditDefaultsOnly)
 	float WarmupTime = 15.f;
@@ -45,4 +49,13 @@ private:
 
 public:
 	FORCEINLINE float GetGameOverTime() const { return GameOverTime; }
+
+	UPROPERTY(Category = AI, EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ABlasterCharacter> AIType;
+
+	UPROPERTY(Category = AI, EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float SearchRadius = 6000.f;
+
+	UPROPERTY(Category = AI, EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float AISpawnCount = 6.f;
 };

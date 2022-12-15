@@ -3,6 +3,7 @@
 
 #include "BlasterAnimInstance.h"
 #include "BlasterCharacter.h"
+#include "BlasterAICharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include <Kismet/KismetMathLibrary.h>
 #include "Blaster/Weapon/Weapon.h"
@@ -20,8 +21,12 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 {
 	Super::NativeUpdateAnimation(DeltaTime);
 
+
 	if (BlasterCharacter == nullptr) {
 		BlasterCharacter = Cast<ABlasterCharacter>(TryGetPawnOwner());
+	}
+	if (BlasterAICharacter == nullptr) {
+		BlasterAICharacter = Cast<ABlasterAICharacter>(TryGetPawnOwner());
 	}
 	if (BlasterCharacter == nullptr) {
 		return;
@@ -81,6 +86,14 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	if (BlasterCharacter->IsLocallyControlled() && BlasterCharacter->bFinishedSwapping) {
 		bUseFABRIK = !BlasterCharacter->IsLocallyReloading();
 	}
+
 	bUseAimOffsets = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading && !BlasterCharacter->GetDisableGameplay();
 	bTransformRightHand = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading && !BlasterCharacter->GetDisableGameplay();
+	if (BlasterAICharacter != nullptr) {
+		bUseAimOffsets = false;
+		bTransformRightHand = false;
+		bLocallyControlled = false;
+		bWeaponEquipped = true;
+		bIsAccelerating = BlasterAICharacter->GetMovementComponent()->Velocity.Size() > 0.f ? true : false;
+	}
 }
