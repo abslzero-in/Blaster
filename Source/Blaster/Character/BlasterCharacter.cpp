@@ -386,7 +386,7 @@ void ABlasterCharacter::UpdateHUDAmmo()
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	if (bElimmed) return;
+	if (bElimmed || bIsInvinsible) return;
 
 	float DamageToHealth = Damage;
 	if (Shield > 0) {

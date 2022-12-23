@@ -21,12 +21,16 @@ public:
 
 protected:
 
+	void PatrolForTarget();
 	void SpawnRandomWeapon();
 	ABlasterCharacter* GetNearestTarget();
 	void SetCurrentTarget();
 	void StartAttacking();
+	void StartShooting();
+	void StopShooting();
 	void StopAttacking();
 	void AttackTarget();
+	bool CheckValidTarget();
 
 	void AILookAtPlayer(float DeltaTime);
 
@@ -57,6 +61,20 @@ private:
 
 	void TargetLostTimerFinished();
 
+	FTimerHandle StrafeTimer;
+
+	UPROPERTY(EditDefaultsOnly)
+	float StrafeDelay = 3.f;
+
+	void StrafeTimerFinished();
+
+	FTimerHandle ShootTimer;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ShootDelay = 3.f;
+
+	void ShootTimerFinished();
+
 
 	FTimerHandle AIScanTargeTimer;
 
@@ -66,9 +84,24 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float AIRotationInterpSpeed = 1.f;
 
+	bool bIsLockedOn = false;
+	bool bIsMoving = false;
+	bool bCanAttack = false;
+	ABlasterCharacter* MoveToTarget;
 	bool bIsAttacking = false;
-	bool bIsFiring = false;
+	bool bIsPatrolling = false;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float AttackRadius = 1000.f;
 
+	UPROPERTY(EditDefaultsOnly)
+	float AcceptableAttackRadius = 1500.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Search", meta = (AllowPrivateAccess = true))
+	float StrafeRadius = 300.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Search", meta = (AllowPrivateAccess = true))
+	float SearchRadius = 3000.f;
 public:
 	FORCEINLINE ABlasterCharacter* GetCurrentTarget() const { return CurrentTarget; }
 
