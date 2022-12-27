@@ -154,6 +154,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* foot_l;
 
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	bool bIsInvinsible = false;
+
 private:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	class USpringArmComponent* CameraBoom;
@@ -324,9 +327,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float TurnInPlaceAimAngle = 15.f;
-
-	UPROPERTY(EditAnywhere, Category = "Player Stats")
-	bool bIsInvinsible = false;
 
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);

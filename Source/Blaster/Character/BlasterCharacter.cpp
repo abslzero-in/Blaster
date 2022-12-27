@@ -28,6 +28,7 @@
 #include <NiagaraComponent.h>
 #include <NiagaraFunctionLibrary.h>
 #include "Blaster/GameState/BlasterGameState.h"
+#include "Blaster/GameMode/LobbyGameMode.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -235,6 +236,15 @@ void ABlasterCharacter::BeginPlay()
 	if (HasAuthority()) {
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	}
+
+	ALobbyGameMode* LobbyGameMode = GetWorld()->GetAuthGameMode<ALobbyGameMode>();
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	if (LobbyGameMode) {
+		bIsInvinsible = true;
+	}
+	if (BlasterGameMode) {
+		bIsInvinsible = false;
+	}
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -408,6 +418,8 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 
 	if (Health == 0.f) {
 		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+		ALobbyGameMode* LobbyGameMode = GetWorld()->GetAuthGameMode<ALobbyGameMode>();
+
 		if (BlasterGameMode) {
 			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
@@ -420,6 +432,14 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 			}
 			else {
 				BlasterGameMode->EnemyAIEliminated(this, AttackerController);
+			}
+		}
+
+		if (LobbyGameMode) {
+			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+			if (BlasterPlayerController == nullptr) {
+				LobbyGameMode->EnemyAIEliminated(this);
 			}
 		}
 	}
@@ -556,6 +576,10 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 void ABlasterCharacter::ElimTimerFinished()
 {
 	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	ALobbyGameMode* LobbyGameMode = GetWorld()->GetAuthGameMode<ALobbyGameMode>();
+	if (LobbyGameMode) {
+		LobbyGameMode->RequestRespawn(this);
+	}
 	if (BlasterGameMode && !bLeftGame) {
 		BlasterGameMode->RequestRespawn(this, Controller);
 	}
@@ -643,6 +667,7 @@ void ABlasterCharacter::EquipButtonPressed()
 	if (bDisableGameplay) return;
 	if (Combat) {
 		ServerEquipButtonPress();
+		Combat->EquipWeaponSetHUD(OverlappingWeapon);
 	}
 }
 
@@ -929,7 +954,7 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 
 	OverlappingWeapon = Weapon;
 
-	if (IsLocallyControlled()) {
+	if (IsLocallyControlled() && IsPlayerControlled()) {
 		if (OverlappingWeapon) {
 			OverlappingWeapon->ShowPickupWidget(true);
 		}

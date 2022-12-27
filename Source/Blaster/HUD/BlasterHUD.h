@@ -43,13 +43,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Announcement")
 	TSubclassOf<class UUserWidget> AnnouncementClass;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UObject> WeaponImagePrimary;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UObject> WeaponImageSecondary;
+
 	UPROPERTY()
 	class UAnnouncement* Announcement;
 
 	void AddAnnouncement();
-	void RemoveCrosshair();
-
 	void AddElimAnnouncement(FString Attacker, FString Victim);
+
 protected:
 	virtual void BeginPlay() override;
 

@@ -47,9 +47,6 @@ private:
 	virtual void OnMatchStateSet() override;
 	float CountdownTime = 0.f;
 
-public:
-	FORCEINLINE float GetGameOverTime() const { return GameOverTime; }
-
 	UPROPERTY(Category = AI, EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<ABlasterCharacter> AIType;
 
@@ -58,4 +55,8 @@ public:
 
 	UPROPERTY(Category = AI, EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float AISpawnCount = 6.f;
+
+public:
+	FORCEINLINE float GetGameOverTime() const { return GameOverTime; }
+
 };

@@ -12,8 +12,6 @@
 #include "Net/UnrealNetwork.h"
 #include "AIController.h"
 #include "NavigationSystem.h"
-#include "BehaviorTree/BehaviorTreeComponent.h"
-#include "Blaster/AI/BlasterBTTask_FindRandomLocation.h"
 
 
 namespace MatchState {
@@ -229,6 +227,7 @@ void ABlasterGameMode::SpawnAI()
 	TArray<AActor*> PlayerStarts;
 	UWorld* World = GetWorld();
 	UGameplayStatics::GetAllActorsOfClassWithTag(this, AActor::StaticClass(), FName("AISpawnPoint"), PlayerStarts);
+	if (PlayerStarts.Num() <= 0) return;
 	for (int32 i = 0; i < AISpawnCount; i++)
 	{
 		int32 Selection = FMath::RandRange(0, PlayerStarts.Num() - 1);

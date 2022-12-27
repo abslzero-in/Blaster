@@ -95,10 +95,10 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr) return;
-
 	if (CombatState == ECombatState::ECS_Reloading) {
 		FinishReloading();
 	}
+	EquipWeaponSetHUD(WeaponToEquip);
 	if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr) {
 		EquipSecondaryWeapon(WeaponToEquip);
 	}
@@ -108,7 +108,37 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
+}
 
+void UCombatComponent::EquipWeaponSetHUD(AWeapon* WeaponToEquip)
+{
+	if (Character == nullptr || WeaponToEquip == nullptr) return;
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+
+	if (Controller && bPrimaryEquipped) {
+		if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr) {
+			Controller->SetHUDWeaponImage(EquippedWeapon->GetWeaponType(), 1);
+			Controller->SetHUDWeaponImage(WeaponToEquip->GetWeaponType(), 2);
+		}
+		else {
+			Controller->SetHUDWeaponImage(WeaponToEquip->GetWeaponType(), 1);
+			if (SecondaryWeapon != nullptr) {
+				Controller->SetHUDWeaponImage(SecondaryWeapon->GetWeaponType(), 2);
+			}
+		}
+	}
+	else if (Controller && !bPrimaryEquipped) {
+		if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr) {
+			Controller->SetHUDWeaponImage(EquippedWeapon->GetWeaponType(), 2);
+			Controller->SetHUDWeaponImage(WeaponToEquip->GetWeaponType(), 1);
+		}
+		else {
+			Controller->SetHUDWeaponImage(WeaponToEquip->GetWeaponType(), 2);
+			if (SecondaryWeapon != nullptr) {
+				Controller->SetHUDWeaponImage(SecondaryWeapon->GetWeaponType(), 1);
+			}
+		}
+	}
 }
 
 void UCombatComponent::SwapWeapons()
@@ -318,7 +348,9 @@ void UCombatComponent::FinishSwap()
 		CombatState = ECombatState::ECS_Unoccupied;
 	}
 	if (SecondaryWeapon) SecondaryWeapon->EnableCustomDepth(true);
-	if (Character) Character->bFinishedSwapping = true;
+	if (Character == nullptr) return;
+	
+	Character->bFinishedSwapping = true;
 }
 
 void UCombatComponent::FinishSwapAttachWeapons()
@@ -335,6 +367,15 @@ void UCombatComponent::FinishSwapAttachWeapons()
 
 	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
 	AttachActorToBackpack(SecondaryWeapon);
+
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+
+	if (Controller) {
+		if (EquippedWeapon != nullptr && SecondaryWeapon != nullptr) {
+			Controller->SetHUDWeaponImage(EWeaponType::EWT_MAX, 3);
+			bPrimaryEquipped = !bPrimaryEquipped;
+		}
+	}
 }
 
 void UCombatComponent::PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount)

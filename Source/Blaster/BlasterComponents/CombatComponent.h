@@ -21,6 +21,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
+	void EquipWeaponSetHUD(AWeapon* WeaponToEquip);
 	void SwapWeapons();
 	void ReloadEmptyWeapon();
 	void PlayEquipWeaponSound(AWeapon* WeaponToEquip);
@@ -47,6 +48,7 @@ public:
 	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 
 	bool bLocallyReloading = false;
+	bool bPrimaryEquipped = true;
 
 protected:
 	virtual void BeginPlay() override;
@@ -108,6 +110,9 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_SecondaryWeapon)
 	AWeapon* SecondaryWeapon;
+
+
+	EWeaponType FirstSlotWeapon;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Aiming)
 	bool bAiming = false;

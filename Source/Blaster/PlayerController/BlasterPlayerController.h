@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Blaster/Weapon/WeaponTypes.h"
+
+
 #include "BlasterPlayerController.generated.h"
 
 /**
@@ -23,6 +26,7 @@ public:
 	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDBountyPlayer();
+	void SetHUDWeaponImage(EWeaponType WeaponType, int32 Slot);
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
 	void SetHUDMatchCountdown(int32 Ammo);

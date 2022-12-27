@@ -11,12 +11,14 @@
 #include <Net/UnrealNetwork.h>
 #include <Kismet/GameplayStatics.h>
 #include "Blaster/GameMode/BlasterGameMode.h"
+#include "Blaster/GameMode/LobbyGameMode.h"
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Engine/Engine.h"
 #include <Components/Image.h>
 #include "Blaster/HUD/ESCWidget.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 
 
 
@@ -213,12 +215,22 @@ void ABlasterPlayerController::ClientJoinMidgame_Implementation(FName StateOfMat
 void ABlasterPlayerController::ServerCheckMatchState_Implementation()
 {
 	ABlasterGameMode* GameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	ALobbyGameMode* LobbyGameMode = Cast<ALobbyGameMode>(UGameplayStatics::GetGameMode(this));
 	if (GameMode) {
 		WarmupTime = GameMode->WarmupTime;
 		MatchTime = GameMode->MatchTime;
 		GameOverTime = GameMode->GameOverTime;
 		LevelStartingTime = GameMode->LevelStartingTime;
 		MatchState = GameMode->GetMatchState();
+		ClientJoinMidgame(MatchState, WarmupTime, MatchTime, GameOverTime, LevelStartingTime);
+	}
+
+	if (LobbyGameMode) {
+		WarmupTime = LobbyGameMode->WarmupTime;
+		MatchTime = LobbyGameMode->MatchTime;
+		GameOverTime = LobbyGameMode->GameOverTime;
+		LevelStartingTime = LobbyGameMode->LevelStartingTime;
+		MatchState = MatchState::InProgress;
 		ClientJoinMidgame(MatchState, WarmupTime, MatchTime, GameOverTime, LevelStartingTime);
 	}
 }
@@ -247,7 +259,8 @@ void ABlasterPlayerController::SetHUDTime()
 	//	}
 	//}
 
-	if (CountdownInt != SecondsLeft) {
+	ALobbyGameMode* LobbyGameMode = Cast<ALobbyGameMode>(UGameplayStatics::GetGameMode(this));
+	if (LobbyGameMode == nullptr && CountdownInt != SecondsLeft) {
 		if (MatchState == MatchState::WaitingToStart) {
 			SetHUDAnnouncementCountdown(TimeLeft);
 		}
@@ -286,14 +299,12 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlay &&
-		BlasterHUD->CharacterOverlay->HealthBar &&
-		BlasterHUD->CharacterOverlay->HealthText;
+		BlasterHUD->CharacterOverlay->HealthBar;
+
 	if (bHUDValid)
 	{
 		const float HealthPercent = Health / MaxHealth;
 		BlasterHUD->CharacterOverlay->HealthBar->SetPercent(HealthPercent);
-		FString HealthText = FString::Printf(TEXT("%d / %d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
-		BlasterHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
 	else {
 		bInitializeHealth = true;
@@ -418,6 +429,22 @@ void ABlasterPlayerController::SetHUDBountyPlayer()
 	}
 }
 
+void ABlasterPlayerController::SetHUDWeaponImage(EWeaponType WeaponType, int32 Slot)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay;
+	if (bHUDValid)
+	{
+		if (Slot == 3) {
+			BlasterHUD->CharacterOverlay->SwapHUDWeaponImage();
+		}
+		else {
+			BlasterHUD->CharacterOverlay->SetHUDWeaponImage(WeaponType, Slot);
+		}
+	}
+}
+
 void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
@@ -438,6 +465,7 @@ void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlay &&
 		BlasterHUD->CharacterOverlay->CarriedAmmoCount;

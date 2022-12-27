@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Blaster/Weapon/WeaponTypes.h"
+
+
 #include "CharacterOverlay.generated.h"
 
 /**
@@ -20,10 +23,10 @@ public:
 	class UProgressBar* HealthBar;
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* HealthText;
+	UProgressBar* ShieldBar;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* KillCount;
+	class UTextBlock* KillCount;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* DeathCount;
@@ -41,14 +44,15 @@ public:
 	UTextBlock* TopPlayerName;
 
 	UPROPERTY(meta = (BindWidget))
-	class UImage* TopPlayerImage;
-
-	UPROPERTY(meta = (BindWidget))
-	UProgressBar* ShieldBar;
-
-	UPROPERTY(meta = (BindWidget))
 	class UImage* HighPingImage;
 
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* HighPingAnimation;
+
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SetHUDWeaponImage(EWeaponType WeaponType, int32 WeaponSlot);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SwapHUDWeaponImage();
 };

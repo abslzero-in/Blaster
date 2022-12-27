@@ -2,4 +2,13 @@
 
 
 #include "CharacterOverlay.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 
+
+void UCharacterOverlay::SetHUDWeaponImage_Implementation(EWeaponType WeaponType, int32 WeaponSlot)
+{
+}
+
+void UCharacterOverlay::SwapHUDWeaponImage_Implementation()
+{
+}

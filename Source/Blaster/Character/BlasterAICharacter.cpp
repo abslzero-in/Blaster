@@ -36,6 +36,8 @@ void ABlasterAICharacter::BeginPlay()
 	BlasterCombat = GetCombat();
 
 	SpawnRandomWeapon();
+	bIsInvinsible = false;
+
 	if (HasAuthority() && PawnSensingComponent) {
 		AIPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &ABlasterAICharacter::OnTargetUpdate);
 	}
@@ -54,6 +56,21 @@ void ABlasterAICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (IsElimmed()) {
+		if (TargetLostTimer.IsValid()) {
+			GetWorldTimerManager().ClearTimer(TargetLostTimer);
+
+		}
+		if (ShootTimer.IsValid()) {
+			GetWorldTimerManager().ClearTimer(ShootTimer);
+
+		}
+		if (StrafeTimer.IsValid()) {
+			GetWorldTimerManager().ClearTimer(StrafeTimer);
+		}
+		StopAttacking();
+	}
+	
 	if (bIsLockedOn) {
 		if (!bIsMoving) {
 			AILookAtPlayer(DeltaTime);
@@ -86,12 +103,13 @@ void ABlasterAICharacter::PatrolForTarget()
 
 void ABlasterAICharacter::SpawnRandomWeapon()
 {
-	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
 	UWorld* World = GetWorld();
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	if (World == nullptr) return;
 	int32 Selection = FMath::RandRange(0, SpawnWeaponList.Num() - 1);
 	AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(SpawnWeaponList[Selection]);
 
-	if (BlasterGameMode && World && StartingWeapon) {
+	if (BlasterGameMode && StartingWeapon) {
 		BlasterCombat = GetCombat();
 		if (BlasterCombat) {
 			StartingWeapon->bDestroyWeapon = true;
@@ -113,7 +131,7 @@ ABlasterCharacter* ABlasterAICharacter::GetNearestTarget()
 		float Distance = GetDistanceTo(Target);
 		if (Distance < LeastDistance) {
 			ABlasterCharacter* TempTarget = Cast<ABlasterCharacter>(Target);
-			if (TempTarget != nullptr && !TempTarget->IsElimmed()) {
+			if (TempTarget != nullptr && !TempTarget->IsElimmed() && TempTarget->IsPlayerControlled()) {
 				NearestActor = TempTarget;
 				LeastDistance = Distance;
 			}
@@ -228,15 +246,17 @@ void ABlasterAICharacter::StopShooting()
 
 void ABlasterAICharacter::StopAttacking()
 {
+	StopShooting();
 	bIsAttacking = false;
 	bIsLockedOn = false;
 	CurrentTarget = nullptr;
+	if (AIController == nullptr) return;
 	if (bIsMoving) {
 		AIController->StopMovement();
 		bIsMoving = false;
 	}
 	AIController->GetBlackboardComponent()->SetValueAsObject("CurrentTarget", CurrentTarget);
-	StopShooting();
+	
 }
 
 void ABlasterAICharacter::AILookAtPlayer(float DeltaTime)
@@ -288,7 +308,9 @@ void ABlasterAICharacter::TargetLostTimerFinished()
 
 void ABlasterAICharacter::StrafeTimerFinished()
 {
+	if (AIController == nullptr) return;
 	AIController->StopMovement();
+
 	if (!bIsAttacking) return;
 
 	StartShooting();
@@ -308,6 +330,14 @@ void ABlasterAICharacter::ShootTimerFinished()
 
 	if (!bIsAttacking || AIController == nullptr) return;
 
+	GetWorldTimerManager().SetTimer(
+		StrafeTimer,
+		this,
+		&ABlasterAICharacter::StrafeTimerFinished,
+		StrafeDelay,
+		false
+	);
+
 	if (AIController->GetMoveStatus() == EPathFollowingStatus::Idle) {
 		bool bFoundLocation = false;
 
@@ -320,19 +350,11 @@ void ABlasterAICharacter::ShootTimerFinished()
 				NavSystem->GetRandomReachablePointInRadius(GetActorLocation(), StrafeRadius, Location);
 			}
 
-			FRotator PlayerRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Location);
+			FRotator PlayerRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Location.Location);
 			if (abs(PlayerRot.Yaw) < 90.f) {
 				bFoundLocation = true;
 				AIController->MoveTo(Location.Location);
 			}
 		}
 	}
-
-	GetWorldTimerManager().SetTimer(
-		StrafeTimer,
-		this,
-		&ABlasterAICharacter::StrafeTimerFinished,
-		StrafeDelay,
-		false
-	);
 }
