@@ -17,11 +17,16 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	int32 NumOfPLayers = GameState.Get()->PlayerArray.Num();
 
 	if (NumOfPLayers == 2) {
-		UWorld* World = GetWorld();
-		if (World) {
-			bUseSeamlessTravel = true;
-			World->ServerTravel(FString("/Game/Maps/BlasterAsianMap?listen"));
-		}
+		MoveToMap();
+	}
+}
+
+void ALobbyGameMode::MoveToMap()
+{
+	UWorld* World = GetWorld();
+	if (World) {
+		bUseSeamlessTravel = true;
+		World->ServerTravel(FString("/Game/Maps/BlasterAsianMap?listen"));
 	}
 }
 

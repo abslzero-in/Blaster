@@ -104,12 +104,11 @@ void ABlasterAICharacter::PatrolForTarget()
 void ABlasterAICharacter::SpawnRandomWeapon()
 {
 	UWorld* World = GetWorld();
-	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
 	if (World == nullptr) return;
 	int32 Selection = FMath::RandRange(0, SpawnWeaponList.Num() - 1);
 	AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(SpawnWeaponList[Selection]);
 
-	if (BlasterGameMode && StartingWeapon) {
+	if (StartingWeapon) {
 		BlasterCombat = GetCombat();
 		if (BlasterCombat) {
 			StartingWeapon->bDestroyWeapon = true;
